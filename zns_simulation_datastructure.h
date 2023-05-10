@@ -1,11 +1,20 @@
 /* 2020. 09. 22 - Date of initial creation
  * Creater : Gunhee Choi
  * Modifier : Hojin Shin
+ * Modifier&Refactoring : Inho Song (2023.04.28)
+ * 
  * This file defines the Simulation of Data Structure Header
 */
 
 #ifndef ZNS_Simulation_datastructure_H
 #define ZNS_Simulation_datastructure_H
+
+#define _4KB        4096
+#ifndef _192KB
+#define _192KB      196608
+#endif
+#define _128KB      131072
+
 
 #include <iostream>
 
@@ -36,6 +45,7 @@ class SIM_Segment {
 
 public :
     SIM_Segment() {};
+    
     void set_segment_info(int i_segment, int i_start_block, int status);
     void print_segment_info();
     void print_status();
@@ -63,8 +73,12 @@ public :
     int get_i_start_block();
     float get_utilization();
     void set_utilization(float valid_cnt);
+
+    int get_valid_blocks(SIM_Zone * Zone_ctl, SIM_Block * Block_ctl, int i_zone);
+
     int m2_get_valid_blocks(SIM_Zone * Zone_ctl, SIM_Block * Block_ctl, int i_zone);
     int u3_get_valid_blocks(SIM_Zone * Zone_ctl, SIM_Block * Block_ctl, int i_zone);
+
     void reset_valid_blocks();
 };
 

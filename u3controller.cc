@@ -83,7 +83,8 @@ int u3_zns_get_info(char * dev)
 {
 	zns_info = (struct u3_zns_info *)malloc(sizeof(struct u3_zns_info));
 	int fd = open(dev, O_RDWR);
-	struct u3_nvme_id_ns *id_ns = (struct u3_nvme_id_ns *)malloc(SECTOR_SIZE);
+	//struct u3_nvme_id_ns *id_ns = (struct u3_nvme_id_ns *)malloc(SECTOR_SIZE);
+	struct NvmeIdNs *id_ns = (struct NvmeIdNs *)malloc(SECTOR_SIZE);
 	struct u3_controller_identify *id_ctrl = (struct u3_controller_identify *)malloc(SECTOR_SIZE);
 
 	u3_identify_ns(fd, id_ns);
@@ -100,12 +101,15 @@ int u3_zns_get_info(char * dev)
 	zns_info -> ns_pref_dealloc_gran = id_ns -> npdg;
 	zns_info -> ns_pref_dealloc_align = id_ns -> npda;
 	zns_info -> ns_opot_wr_size = id_ns -> nows;
-
+	/*
 	zns_info -> max_active_res = id_ns -> mar;
 	zns_info -> opened_zone_num = 0;
 	zns_info -> max_open_res = id_ns -> mor;
 	zns_info -> zfi = id_ns -> zfi;
 	zns_info -> zonef = id_ns -> zonef[id_ns -> zfi];
+	*/
+	printf("(zns_info -> ns_size) %llu\n",(zns_info -> ns_size));
+	printf("(zns_info -> zonef.zsze) %llu\n",(zns_info -> zonef.zsze));
 
 	zns_info -> max_zone_cnt = (zns_info -> ns_size)/(zns_info -> zonef.zsze);
 	zone_desc_list = (struct u3_zone_descriptor *)malloc(zns_info -> max_zone_cnt * sizeof(struct u3_zone_descriptor));
@@ -117,9 +121,9 @@ void u3_print_zns_info()
 {
 	printf("ZNS SSD Info\n");
 
-	printf("Namespace Size\t: %u\n", zns_info -> ns_size);
-	printf("Namespace Capacity\t: %u\n", zns_info -> ns_cap);
-	printf("Namespace Utilization\t: %u\n", zns_info -> ns_use);
+	printf("Namespace Size\t: %llu\n", zns_info -> ns_size);
+	printf("Namespace Capacity\t: %llu\n", zns_info -> ns_cap);
+	printf("Namespace Utilization\t: %llu\n", zns_info -> ns_use);
 	printf("Namespace Optimal IO Boundary\t: %u\n", zns_info -> ns_op_io_bound);
 	printf("Namespace Preferred Write Gran\t: %u\n", zns_info -> ns_pref_wr_gran);
 	printf("Namespace Preferred Write Align\t: %u\n", zns_info -> ns_pref_wr_align);
@@ -128,7 +132,7 @@ void u3_print_zns_info()
 	printf("Namespace Optimal Write Size\t: %u\n", zns_info -> ns_opot_wr_size);
 
 	printf("Namespace id - Zone Format Index\t: %u\n", zns_info -> zfi);
-	printf("Namespace id - Zone Size\t: %u\n", zns_info -> zonef.zsze);
+	printf("Namespace id - Zone Size\t: %llu\n", zns_info -> zonef.zsze);
 	printf("Namespace id - Max Active Zones\t: %u\n", zns_info -> max_active_res);
 	printf("Namespace id - Max Open Zones\t: %u\n", zns_info -> max_open_res);
 }
@@ -369,9 +373,9 @@ void u3_print_zone_desc(unsigned int total_zone)
 			printf("Zone State\t: FULL\n");
 		else if(zone_desc_list[i].state == STATE_OFFLINE)
 			printf("Zone State\t: OFFLINE\n");
-		printf("Zone Capacity\t: %u\n", zone_desc_list[i].capacity);
-		printf("Zone Start LBA\t: %u\n", zone_desc_list[i].start_lba);
-		printf("Zone Write Pointer\t: %u\n", zone_desc_list[i].wp);
+		printf("Zone Capacity\t: %llu\n", zone_desc_list[i].capacity);
+		printf("Zone Start LBA\t: %llu\n", zone_desc_list[i].start_lba);
+		printf("Zone Write Pointer\t: %llu\n", zone_desc_list[i].wp);
 		printf("Finish Zone Recommended\t: %#"PRIx8"\n", zone_desc_list[i].fzr);
 		printf("Reset Zone Recommended\t: %#"PRIx8"\n", zone_desc_list[i].rzr);
 		printf("-----------------------------------\n\n");
@@ -401,7 +405,7 @@ int u3_zns_write_request(void * write_data, __le16 nblocks, __le32 data_size, __
 	result = ioctl(zns_info -> fd, U3_NVME_IOCTL_SUBMIT_IO, &io);
 	if(result != 0)
 	{
-		printf("ZNS SSD Write Fail, error code : %#"PRIx64"\n", result);
+		printf("ZNS SSD Write Fail, error code : %d\n", result);
 		return result;
 	}
 
@@ -433,7 +437,7 @@ int u3_zns_read_request(void * read_data, int nblocks, __u64 slba)
 		.opcode		= 0x02,
 		.flags		= 0,
 		.control	= 0,
-		.nblocks	= nblocks,
+		.nblocks	= (__u16)nblocks,
 		.rsvd		= 0,
 		.metadata	= 0,
 		.addr		= (__u64)(uintptr_t) read_data,
@@ -447,7 +451,7 @@ int u3_zns_read_request(void * read_data, int nblocks, __u64 slba)
 	result = ioctl(zns_info -> fd, U3_NVME_IOCTL_SUBMIT_IO, &io);
 	if(result == -1)
 	{
-		printf("ZNS SSD Read Fail : %#x\n");
+		printf("ZNS SSD Read Fail : %#x\n",result);
 		return -1;
 	}
 

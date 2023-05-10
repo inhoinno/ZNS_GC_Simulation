@@ -412,6 +412,47 @@ struct u3_nvme_id_ns {
 	//4096 byte
 };
 
+typedef struct NvmeLBAF {
+    uint16_t    ms;
+    uint8_t     lbads;
+    uint8_t     rp;
+} NvmeLBAF;
+
+typedef struct NvmeIdNs {
+    uint64_t    nsze;
+    uint64_t    ncap;
+    uint64_t    nuse;
+    uint8_t     nsfeat;
+    uint8_t     nlbaf;
+    uint8_t     flbas;
+    uint8_t     mc;
+    uint8_t     dpc;
+    uint8_t     dps;
+    uint8_t     nmic;
+    uint8_t     rescap;
+    uint8_t     fpi;
+    uint8_t     dlfeat;
+    uint16_t    nawun;
+    uint16_t    nawupf;
+    uint16_t    nacwu;
+    uint16_t    nabsn;
+    uint16_t    nabo;
+    uint16_t    nabspf;
+    uint16_t    noiob;
+    uint8_t     nvmcap[16];
+    uint16_t    npwg;
+    uint16_t    npwa;
+    uint16_t    npdg;
+    uint16_t    npda;
+    uint16_t    nows;
+    uint8_t     rsvd74[30];
+    uint8_t     nguid[16];
+    uint64_t    eui64;
+    NvmeLBAF    lbaf[16];
+    uint8_t     rsvd192[192];
+    uint8_t     vs[3712];
+} NvmeIdNs;
+
 struct u3_controller_identify{
 	__u8   zamds;                           //Zone Append Maximum Data Size(ZAMDS), minimum memory size * 2^n
 	__u8	 rsvd[4095];                                //Reserved

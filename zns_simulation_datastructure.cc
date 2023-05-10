@@ -33,6 +33,19 @@ void SIM_Zone::set_utilization(float valid_cnt) {
     /* TODO */
 }
 
+int SIM_Zone::get_valid_blocks(SIM_Zone * Zone_ctl, SIM_Block * Block_ctl, int i_zone){
+    int start_i_block = Zone_ctl[i_zone].get_i_start_block();
+    int end_i_block = start_i_block + FEMU_SEGMENT_COUNT_IN_ZONE * FEMU_BLOCK_COUNT_IN_SEGMENT;
+
+    for (int block_num = start_i_block; block_num < end_i_block; block_num++) {
+        if (Block_ctl[block_num].get_state() == VALID_BLOCK)
+            valid_block_count++;
+    }
+
+    return valid_block_count;
+
+}
+
 int SIM_Zone::m2_get_valid_blocks(SIM_Zone * Zone_ctl, SIM_Block * Block_ctl, int i_zone) {
     int start_i_block = Zone_ctl[i_zone].get_i_start_block();
     int end_i_block = start_i_block + M2_SEGMENT_COUNT_IN_ZONE * M2_BLOCK_COUNT_IN_SEGMENT;
@@ -127,8 +140,10 @@ int SIM_Block::get_i_block() {
 
 int SIM_Block::get_state() {
     return state;
+    return 0;
 }
 
 int SIM_Block::set_state(int state) {
     this->state = state;
+    return 0;
 }
